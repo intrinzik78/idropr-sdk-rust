@@ -52,7 +52,7 @@ impl <'a> SessionsClient<'a> {
             .await
             .map_err(|_| SDKError::ServerConnectedFailed)?;
 
-        // handle all response possabilities
+        // handle all response possibilities
         let response:CreateResponse = {
             match res.status() {
                 StatusCode::OK => res.json().await.map_err(|_| SDKError::FailedDeserialization)?,
@@ -80,7 +80,7 @@ impl <'a> SessionsClient<'a> {
             .await
             .map_err(|_| SDKError::ServerConnectedFailed)?;
 
-        // handle all response possabilities
+        // handle all response possibilities
         let response:DeleteResponse = {
             match res.status() {
                 StatusCode::OK => res.json().await.map_err(|_| SDKError::FailedDeserialization)?,

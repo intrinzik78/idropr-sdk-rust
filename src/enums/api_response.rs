@@ -1,6 +1,6 @@
 use serde::{Deserialize};
 
-use crate::types::session::ApiError;
+use crate::types::ApiError;
 
 #[derive(Debug,Deserialize)]
 pub enum ApiResponse<T,U> {

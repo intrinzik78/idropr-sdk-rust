@@ -3,10 +3,7 @@ use serde::Serialize;
 
 use crate::{
     enums::{ApiResponse,SDKError},
-    types::{
-        AccessToken,
-        session::{ApiError, ApiSuccess}, Client
-    }
+    types::{AccessToken,ApiError,ApiSuccess,Client},
 };
 
 type Result<T> = std::result::Result<T,SDKError>;

@@ -19,7 +19,7 @@ pub enum SDKError {
 
     // SDK defined errors ↴
     FailedDeserialization,    // generated when an OK response is received, but parsing failed
-    ServerConnectedFailed,      // generated when a query execution is attempted, but a connection fails
+    ServerConnectionFailed,   // generated when a query execution is attempted, but a connection fails
     RequestRejected,
     UrlParsePath,
     UrlPortParse,
@@ -33,8 +33,14 @@ impl std::error::Error for SDKError {}
 
 impl Display for SDKError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        type S = SDKError;
         // print only on non-production server modes, otherwise do not print detailed
         match self {
+            S::FailedDeserialization => write!(f,"OK response is received, but failed to parse response."),
+            S::ServerConnectionFailed => write!(f,"could not connect to server"),
+            S::RequestRejected => write!(f,"server rejected request"),
+            S::UrlParsePath => write!(f,"malformed path, parsing failed"),
+            S::UrlPortParse => write!(f,"malformed port, parsing failed"),
             _ => write!(f, "{self:?}")
         }
     }

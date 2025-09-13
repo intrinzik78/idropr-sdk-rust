@@ -50,7 +50,7 @@ impl <'a> SessionsClient<'a> {
             .http()
             .execute(req)
             .await
-            .map_err(|_| SDKError::ServerConnectedFailed)?;
+            .map_err(|_| SDKError::ServerConnectionFailed)?;
 
         // handle all response possibilities
         let response:CreateResponse = {
@@ -78,7 +78,7 @@ impl <'a> SessionsClient<'a> {
             .http()
             .execute(req)
             .await
-            .map_err(|_| SDKError::ServerConnectedFailed)?;
+            .map_err(|_| SDKError::ServerConnectionFailed)?;
 
         // handle all response possibilities
         let response:DeleteResponse = {

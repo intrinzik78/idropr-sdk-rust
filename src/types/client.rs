@@ -2,7 +2,7 @@ use reqwest::{Client as HttpClient, RequestBuilder, Url};
 
 use crate::{
     enums::{Auth,SDKError},
-    types::{Configuration, session::SessionsClient}
+    types::{session::SessionsClient, Configuration, SecretClient}
 };
 
 /// thin wrapper around a base configuration and reqwest client
@@ -36,6 +36,11 @@ impl Client {
     /// getter for reqwest client
     pub fn http(&self) -> &HttpClient {
         &self.http
+    }
+
+    /// secretes accessor
+    pub fn secrets(&self) -> SecretClient {
+        SecretClient::new(self)
     }
 
     /// sessions accessor

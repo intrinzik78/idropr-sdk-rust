@@ -2,13 +2,12 @@ use reqwest::StatusCode;
 use serde::Serialize;
 
 use crate::{
-    enums::{ApiResponse,SDKError},
-    types::{AccessToken,ApiError,ApiSuccess,Client},
+    enums::SDKError,
+    traits::{ToOpenedResponse,ToParsedError},
+    types::{AccessToken,ApiSuccess,Client},
 };
 
 type Result<T> = std::result::Result<T,SDKError>;
-type CreateResponse = ApiResponse<ApiSuccess<AccessToken>,ApiError>;
-type DeleteResponse = ApiResponse<ApiSuccess<Option<()>>,ApiError>;
 
 #[derive(Debug,Serialize)]
 struct CreateSessionBody {
@@ -28,7 +27,7 @@ impl <'a> SessionsClient<'a> {
     }
 
     /// canonical method to post session to api server
-    pub async fn create_session(&self, username: &str, password: &str) -> Result<CreateResponse> {
+    pub async fn create_session(&self, username: &str, password: &str) -> Result<ApiSuccess<AccessToken>> {
         // build query body
         let body = CreateSessionBody {
             username: username.to_owned(),
@@ -46,25 +45,19 @@ impl <'a> SessionsClient<'a> {
             .build()?;
 
         // execute the query and format the response
-        let res = self.client
+        let response = self.client
             .http()
             .execute(req)
             .await
-            .map_err(|_| SDKError::ServerConnectionFailed)?;
-
-        // handle all response possibilities
-        let response:CreateResponse = {
-            match res.status() {
-                StatusCode::OK => res.json().await.map_err(|_| SDKError::FailedDeserialization)?,
-                _ => ApiResponse::parse_error(res.status())
-            }
-        };
+            .map_err(SDKError::from_reqwest)?
+            .open()
+            .await?;
 
         Ok(response)
     }
     
     /// canonical method to delete session from api server
-    pub async fn delete_session(&self) -> Result<DeleteResponse> {
+    pub async fn delete_session(&self) -> Result<()> {
         // build base query
         let req = self.client.delete("/v1/sessions")?;
 
@@ -78,29 +71,28 @@ impl <'a> SessionsClient<'a> {
             .http()
             .execute(req)
             .await
-            .map_err(|_| SDKError::ServerConnectionFailed)?;
+            .map_err(SDKError::from_reqwest)?;
 
-        // handle all response possibilities
-        let response:DeleteResponse = {
-            match res.status() {
-                StatusCode::OK => res.json().await.map_err(|_| SDKError::FailedDeserialization)?,
-                _ => ApiResponse::parse_error(res.status())
-            }
-        };
+        // handle the empty response
+        if matches!(res.status(),StatusCode::NO_CONTENT) {
+            return Ok(())
+        }
 
-        Ok(response)
+        let e = res.status().parse_error();
+
+        Err(SDKError::ApiError(e))
     }
 }
 
 /// ergonomic
 impl <'a> SessionsClient<'a> {
     /// ergonomically friendly method to log a user in to the system
-    pub async fn login(&self, username: &str, password: &str) -> Result<CreateResponse> {
+    pub async fn login(&self, username: &str, password: &str) -> Result<ApiSuccess<AccessToken>> {
         self.create_session(username, password).await
     }
 
     /// ergonomicaly friendly method to log a user out of the system
-    pub async fn logout(&self) -> Result<DeleteResponse> {
+    pub async fn logout(&self) -> Result<()> {
         self.delete_session().await
     }
 }

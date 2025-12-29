@@ -2,7 +2,7 @@ use reqwest::{Client as HttpClient, RequestBuilder, Url};
 
 use crate::{
     enums::{Auth,SDKError},
-    types::{session::SessionsClient, Configuration, SecretClient}
+    types::{Configuration, DocExtractionClient, SecretClient, SessionsClient}
 };
 
 /// thin wrapper around a base configuration and reqwest client
@@ -39,13 +39,18 @@ impl Client {
     }
 
     /// secretes accessor
-    pub fn secrets(&self) -> SecretClient {
+    pub fn secrets(&self) -> SecretClient<'_> {
         SecretClient::new(self)
     }
 
     /// sessions accessor
-    pub fn sessions(&self) -> SessionsClient {
+    pub fn sessions(&self) -> SessionsClient<'_> {
         SessionsClient::new(self)
+    }
+
+    /// extractions accessor
+    pub fn extractions(&self) -> DocExtractionClient<'_> {
+        DocExtractionClient::new(self)
     }
 
     /// setter for the required access token for private and / or permission controlled endpoints
@@ -143,6 +148,6 @@ mod session_tests {
         // test join method to assemble the api server base url with the resource endpoint
         let endpoint_str = "/testing";
         let endpoint = client.url(endpoint_str).unwrap();
-        assert_eq!(endpoint.as_str(), "https://127.0.0.1/testing");
+        assert_eq!(endpoint.as_str(), "https://127.0.0.1:1000/testing");
     }
 }

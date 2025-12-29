@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::{
     enums::{ApiResponse,SDKError},
+    traits::ToParsedError,
     types::{ApiSuccess,ApiError,Client}
 };
 
@@ -64,7 +65,7 @@ impl<'a> SecretClient<'a> {
             .http()
             .execute(req)
             .await
-            .map_err(|_| SDKError::ServerConnectionFailed)?;
+            .map_err(SDKError::from_reqwest)?;
 
         // handle all response possibilities
         let response:CreateResponse = match res.status() {
@@ -74,8 +75,8 @@ impl<'a> SecretClient<'a> {
                 return Ok(error);
             },
             _ => {
-                let error = ApiResponse::parse_error(res.status());
-                return Ok(error);
+                let error = res.status().parse_error();
+                return Ok(ApiResponse::Error(error));
             }
         };
 
